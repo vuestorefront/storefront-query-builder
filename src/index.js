@@ -56,7 +56,7 @@ export async function buildQueryBodyFromSearchQuery (config, bodybuilder, search
   const optionsPrefix = '_options'
   const queryText = searchQuery.getSearchText()
   const rangeOperators = ['gt', 'lt', 'gte', 'lte', 'moreq', 'from', 'to']
-  let query = bodybuilder.default()
+  let query = bodybuilder
 
   // process applied filters
   const appliedFilters = cloneDeep(searchQuery.getAppliedFilters()) // copy as function below modifies the object
