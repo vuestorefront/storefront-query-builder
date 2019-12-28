@@ -1,12 +1,14 @@
 class SearchQuery {
   /**
     */
-  constructor ({ _availableFilters = [], _appliedFilters = [], _searchText = ''}) {
-    this._availableFilters = _availableFilters
-    this._appliedFilters = _appliedFilters
-    this._searchText = _searchText
+  constructor (queryObj) {
+    if (!queryObj) {
+      queryObj = { _availableFilters: [], _appliedFilters: [], _searchText: ''} 
+    }
+    this._availableFilters = queryObj._availableFilters
+    this._appliedFilters = queryObj._appliedFilters
+    this._searchText = queryObj._searchText
   }
-
   /**
     * @return {Array} array of all available filters objects
     */
