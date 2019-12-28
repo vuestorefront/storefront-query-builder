@@ -1,12 +1,27 @@
 {
   "name": "storefront-query-builder",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Storefront Query Builder",
-  "main": "index.js",
+  "main": "lib/index.js",
+  "scripts": {
+    "prepublish": "babel src --out-dir lib",
+    "build": "babel src --out-dir lib"
+  },
+  "babel": {
+    "presets": [
+      "es2015"
+    ]
+  },
   "repository": "https://github.com/DivanteLtd/storefront-query-builder.git",
   "author": "pkarw <pkarwatka@divante.pl>",
   "license": "MIT",
   "dependencies": {
     "lodash-es": "^4.17.15"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.3",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-es2015": "^6.24.1"
   }
 }
