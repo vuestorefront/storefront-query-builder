@@ -2,7 +2,7 @@ import getFunctionScores from './elasticsearch/score'
 import getMultiMatchConfig from './elasticsearch/multimatch'
 import getBoosts from './elasticsearch/boost'
 import getMapping from './elasticsearch/mapping'
-import cloneDeep from 'clone-dep'
+import cloneDeep from 'clone-deep'
 
 function processNestedFieldFilter (attribute, value) {
   let processedFilter = {
