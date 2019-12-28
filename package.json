@@ -1,6 +1,6 @@
 {
   "name": "storefront-query-builder",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Storefront Query Builder",
   "main": "lib/index.js",
   "scripts": {
