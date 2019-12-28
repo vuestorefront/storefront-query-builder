@@ -1,0 +1,12 @@
+{
+  "name": "storefront-query-builder",
+  "version": "0.0.1",
+  "description": "Storefront Query Builder",
+  "main": "index.js",
+  "repository": "https://github.com/DivanteLtd/storefront-query-builder.git",
+  "author": "pkarw <pkarwatka@divante.pl>",
+  "license": "MIT",
+  "dependencies": {
+    "lodash-es": "^4.17.15"
+  }
+}
