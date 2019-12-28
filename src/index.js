@@ -2,8 +2,7 @@ import getFunctionScores from './elasticsearch/score'
 import getMultiMatchConfig from './elasticsearch/multimatch'
 import getBoosts from './elasticsearch/boost'
 import getMapping from './elasticsearch/mapping'
-import cloneDeep from 'lodash-es/cloneDeep'
-import map from 'lodash-es/map';
+import cloneDeep from 'clone-dep'
 
 function processNestedFieldFilter (attribute, value) {
   let processedFilter = {
@@ -161,9 +160,9 @@ export async function buildQueryBodyFromSearchQuery (config, bodybuilder, search
 }
 export function applySort (sort, query) {
   if (sort) {
-    map(sort, (value, key) => {
+    for (let [key, value] of Object.entries(sort)) {
       query.sort(key, value);
-    });
+    }
   }
 
   return query;
