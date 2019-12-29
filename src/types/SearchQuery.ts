@@ -1,7 +1,13 @@
-class SearchQuery {
-  /**
-    */
-  constructor (queryObj) {
+import AppliedFilter from './AppliedFilter'
+import AvailableFilter from './AvailableFilter'
+import QueryArgument from './QueryArgument'
+export default class SearchQuery {
+
+  private _searchText: string
+  private _availableFilters: [AvailableFilter]
+  private _appliedFilters: [AppliedFilter]
+
+  public constructor (queryObj?: any) {
     if (!queryObj) {
       queryObj = { _availableFilters: [], _appliedFilters: [], _searchText: ''} 
     }
@@ -34,7 +40,7 @@ class SearchQuery {
     * @param {Object}
     * @return {Object}
     */
-  applyFilter ({key, value, scope = 'default', options = Object}) {
+  applyFilter ({key, value, scope = 'default', options = Object}: QueryArgument) {
     this._appliedFilters.push({
       attribute: key,
       value: value,
@@ -49,7 +55,7 @@ class SearchQuery {
     * @param {Object}
     * @return {Object}
     */
-  addAvailableFilter ({field, scope = 'default', options = {}}) {
+  addAvailableFilter ({ field, scope = 'default', options = {} }:AvailableFilter) {
     // value can has only String, Array or numeric type
     this._availableFilters.push({
       field: field,
@@ -64,7 +70,7 @@ class SearchQuery {
   * @param {Array} filters
   * @return {Object}
   */
-  setAvailableFilters (filters) {
+  setAvailableFilters (filters: [AvailableFilter]) {
     this._availableFilters = filters
     return this
   }
@@ -73,10 +79,8 @@ class SearchQuery {
   * @param {String} searchText
   * @return {Object}
   */
-  setSearchText (searchText) {
+  setSearchText (searchText: string) {
     this._searchText = searchText
     return this
   }
 }
-
-export default SearchQuery

@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "outDir": "./lib",
+        "allowJs": true,
+        "target": "es6",
+        "module": "ESNext",
+        "moduleResolution": "node",
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "esModuleInterop": true,
+        "resolveJsonModule": false,
+        "sourceMap": true   
+    },
+    "include": [
+        "./src/**/*"
+    ]
+}

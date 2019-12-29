@@ -22,6 +22,6 @@ function getConfig (config, queryText) {
   return multiMatchConfig
 }
 
-export default function getMultiMatchConfig (queryText) {
-  return getConfig(queryText)
+export default function getMultiMatchConfig (config, queryText) {
+  return getConfig(config, queryText)
 }

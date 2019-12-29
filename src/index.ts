@@ -3,6 +3,7 @@ import getMultiMatchConfig from './elasticsearch/multimatch'
 import getBoosts from './elasticsearch/boost'
 import getMapping from './elasticsearch/mapping'
 import cloneDeep from 'clone-deep'
+import SearchQuery from './types/SearchQuery'
 
 function processNestedFieldFilter (attribute, value) {
   let processedFilter = {
@@ -52,7 +53,7 @@ export function applySearchQuery (config, queryText, query) {
   return query;
 }
 
-export async function buildQueryBodyFromSearchQuery (config, bodybuilder, searchQuery) {
+export async function buildQueryBodyFromSearchQuery (config: any, bodybuilder: any, searchQuery: SearchQuery) {
   const optionsPrefix = '_options'
   const queryText = searchQuery.getSearchText()
   const rangeOperators = ['gt', 'lt', 'gte', 'lte', 'moreq', 'from', 'to']
@@ -65,7 +66,7 @@ export async function buildQueryBodyFromSearchQuery (config, bodybuilder, search
     // apply default filters
     appliedFilters.forEach(filter => {
       if (checkIfObjectHasScope({ object: filter, scope: 'default' }) && Object.keys(filter.value).length) {
-        if (Object.keys(filter.value).every(v => rangeOperators.includes(v))) {
+        if (Object.keys(filter.value).every(v => (rangeOperators.indexOf(v) >= 0))) {
           // process range filters
           query = query.filter('range', filter.attribute, filter.value)
         } else {
@@ -151,20 +152,14 @@ export async function buildQueryBodyFromSearchQuery (config, bodybuilder, search
   }
   // Get searchable fields based on user-defined config.
   query = applySearchQuery(config, queryText, query)
-  const queryBody = query.build()
-  if (searchQuery.suggest) {
-    queryBody.suggest = searchQuery.suggest
-  }
-
-  return queryBody
+  return query.build()
 }
 export function applySort (sort, query) {
   if (sort) {
-    for (let [key, value] of Object.entries(sort)) {
-      query.sort(key, value);
-    }
+    Object.keys(sort).forEach((key) => {
+      query.sort(key, sort[key]);
+    })
   }
-
   return query;
 }
 

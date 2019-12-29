@@ -4,13 +4,7 @@
   "description": "Storefront Query Builder",
   "main": "lib/index.js",
   "scripts": {
-    "prepublish": "babel src --out-dir lib",
-    "build": "babel src --out-dir lib"
-  },
-  "babel": {
-    "presets": [
-      "es2015"
-    ]
+    "build": "tsc --build"
   },
   "repository": "https://github.com/DivanteLtd/storefront-query-builder.git",
   "author": "pkarw <pkarwatka@divante.pl>",
@@ -19,8 +13,6 @@
     "clone-deep": "^4.0.1"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-core": "^6.26.3",
-    "babel-preset-env": "^1.7.0"
+    "typescript": "^3.7.4"
   }
 }
