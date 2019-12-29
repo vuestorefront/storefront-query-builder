@@ -2,7 +2,7 @@
   "name": "storefront-query-builder",
   "version": "0.0.8",
   "description": "Storefront Query Builder",
-  "main": "lib/index.js",
+  "main": "index.ts",
   "scripts": {
     "build": "tsc --build"
   },

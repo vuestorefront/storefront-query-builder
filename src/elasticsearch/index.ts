@@ -1,9 +1,9 @@
-import getFunctionScores from './elasticsearch/score'
-import getMultiMatchConfig from './elasticsearch/multimatch'
-import getBoosts from './elasticsearch/boost'
-import getMapping from './elasticsearch/mapping'
+import getFunctionScores from './score'
+import getMultiMatchConfig from './multimatch'
+import getBoosts from './boost'
+import getMapping from './mapping'
 import cloneDeep from 'clone-deep'
-import SearchQuery from './types/SearchQuery'
+import SearchQuery from '../types/SearchQuery'
 
 function processNestedFieldFilter (attribute, value) {
   let processedFilter = {
@@ -29,7 +29,7 @@ function checkIfObjectHasScope ({ object, scope }) {
   return object.scope === scope || (Array.isArray(object.scope) && object.scope.find(scrope => scrope === scope));
 }
 
-export function applySearchQuery (config, queryText, query) {
+export function applySearchQuery (config: any, queryText: string, query: any) {
   let getQueryBody = function (b) {
     let searchableAttributes = config.elasticsearch.hasOwnProperty('searchableAttributes') ? config.elasticsearch.searchableAttributes : { 'name': { 'boost': 1 } };
     let searchableFields = []
