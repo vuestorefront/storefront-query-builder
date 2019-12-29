@@ -6,7 +6,7 @@ import AvailableFilter from './src/types/AvailableFilter'
 
 interface QueryAdapter {
     buildQueryBodyFromSearchQuery (config: any, bodybuilder: any, searchQuery: SearchQuery)
-    buildQueryBodyFromFilterObject (type: any, config: any, bodybuilder: any, filter: any, search: any)
+    buildQueryBodyFromFilterObject (config: any, bodybuilder: any, filter: any, search: any)
     applySearchQuery (config: any, queryText: string, query: any) 
     applySort (sort: string, quer:any)
 }

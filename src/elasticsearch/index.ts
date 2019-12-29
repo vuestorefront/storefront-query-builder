@@ -152,7 +152,10 @@ export async function buildQueryBodyFromSearchQuery (config: any, bodybuilder: a
   }
   // Get searchable fields based on user-defined config.
   query = applySearchQuery(config, queryText, query)
-  return query.build()
+  const queryBody = query.build()
+  console.dir(searchQuery.getAppliedFilters(),{ depth: null })
+  console.dir(queryBody,{ depth: null })
+  return queryBody
 }
 export function applySort (sort, query) {
   if (sort) {
@@ -169,7 +172,7 @@ export function applySort (sort, query) {
  *   "type_id": { "eq": "configurable "}
  * }
  */
-export async function buildQueryBodyFromFilterObject (type, config, bodybuilder, filter, search = '') {
+export async function buildQueryBodyFromFilterObject (config, bodybuilder, filter, search = '') {
   const appliedFilters = [];
   if (filter) {
     for (var attribute in filter) {
