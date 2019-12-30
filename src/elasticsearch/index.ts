@@ -4,8 +4,9 @@ import getBoosts from './boost'
 import getMapping from './mapping'
 import cloneDeep from 'clone-deep'
 import SearchQuery from '../types/SearchQuery'
+import ElasticsearchQueryConfig from './types/ElasticsearchQueryConfig'
 
-function processNestedFieldFilter (attribute, value) {
+function processNestedFieldFilter (attribute: string, value: any) {
   let processedFilter = {
     'attribute': attribute,
     'value': value
@@ -25,11 +26,11 @@ function processNestedFieldFilter (attribute, value) {
  * @param {String} scope
  * @returns {boolean}
  */
-function checkIfObjectHasScope ({ object, scope }) {
+function checkIfObjectHasScope ({ object, scope }: { object: { scope: string }, scope: string}) {
   return object.scope === scope || (Array.isArray(object.scope) && object.scope.find(scrope => scrope === scope));
 }
 
-export function applySearchQuery (config: any, queryText: string, query: any) {
+export function applySearchQuery ({ config, queryText, queryChain}: { config: ElasticsearchQueryConfig, queryText: string, queryChain: any }) {
   let getQueryBody = function (b) {
     let searchableAttributes = config.elasticsearch.hasOwnProperty('searchableAttributes') ? config.elasticsearch.searchableAttributes : { 'name': { 'boost': 1 } };
     let searchableFields = []
@@ -45,19 +46,18 @@ export function applySearchQuery (config: any, queryText: string, query: any) {
     let functionScore = getFunctionScores(config);
     // Build bool or function_scrre accordingly
     if (functionScore) {
-      query = query.query('function_score', functionScore, getQueryBody);
+      queryChain = queryChain.query('function_score', functionScore, getQueryBody);
     } else {
-      query = query.query('bool', getQueryBody);
+      queryChain = queryChain.query('bool', getQueryBody);
     }
   }
-  return query;
+  return queryChain;
 }
 
-export async function buildQueryBodyFromSearchQuery (config: any, bodybuilder: any, searchQuery: SearchQuery) {
+export async function buildQueryBodyFromSearchQuery ({ config, queryChain, searchQuery }: { config: ElasticsearchQueryConfig, queryChain: any, searchQuery: SearchQuery }) {
   const optionsPrefix = '_options'
   const queryText = searchQuery.getSearchText()
   const rangeOperators = ['gt', 'lt', 'gte', 'lte', 'moreq', 'from', 'to']
-  let query = bodybuilder
 
   // process applied filters
   const appliedFilters = cloneDeep(searchQuery.getAppliedFilters()) // copy as function below modifies the object
@@ -68,7 +68,7 @@ export async function buildQueryBodyFromSearchQuery (config: any, bodybuilder: a
       if (checkIfObjectHasScope({ object: filter, scope: 'default' }) && Object.keys(filter.value).length) {
         if (Object.keys(filter.value).every(v => (rangeOperators.indexOf(v) >= 0))) {
           // process range filters
-          query = query.filter('range', filter.attribute, filter.value)
+          queryChain = queryChain.filter('range', filter.attribute, filter.value)
         } else {
           // process terms filters
           const operator = Object.keys(filter.value)[0]
@@ -78,17 +78,17 @@ export async function buildQueryBodyFromSearchQuery (config: any, bodybuilder: a
           }
           if (operator === 'or') {
             if (filter.value === null) {
-              query = query.orFilter('bool', (b) => {
+              queryChain = queryChain.orFilter('bool', (b) => {
                 return b.notFilter('exists', getMapping(config, filter.attribute))
               })
             } else {
-              query = query.orFilter('terms', getMapping(config, filter.attribute), filter.value)
+              queryChain = queryChain.orFilter('terms', getMapping(config, filter.attribute), filter.value)
             }
           } else {
             if (filter.value === null) {
-              query = query.filter('exists', getMapping(config, filter.attribute))
+              queryChain = queryChain.filter('exists', getMapping(config, filter.attribute))
             } else {
-              query = query.filter('terms', getMapping(config, filter.attribute), filter.value)
+              queryChain = queryChain.filter('terms', getMapping(config, filter.attribute), filter.value)
             }
           }
         }
@@ -129,7 +129,7 @@ export async function buildQueryBodyFromSearchQuery (config: any, bodybuilder: a
     }
 
     if (hasCatalogFilters) {
-      query = query.filterMinimumShouldMatch(1).orFilter('bool', attrFilterBuilder)
+      queryChain = queryChain.filterMinimumShouldMatch(1).orFilter('bool', attrFilterBuilder)
         .orFilter('bool', (b) => attrFilterBuilder(b, optionsPrefix).filter('match', 'type_id', 'configurable')) // the queries can vary based on the product type
     }
   }
@@ -141,29 +141,26 @@ export async function buildQueryBodyFromSearchQuery (config: any, bodybuilder: a
       if (checkIfObjectHasScope({ object: attrToFilter, scope: 'catalog' })) {
         if (attrToFilter.field !== 'price') {
           let aggregationSize = { size: config.products.filterAggregationSize[attrToFilter.field] || config.products.filterAggregationSize.default }
-          query = query.aggregation('terms', getMapping(config, attrToFilter.field), aggregationSize)
-          query = query.aggregation('terms', attrToFilter.field + optionsPrefix, aggregationSize)
+          queryChain = queryChain.aggregation('terms', getMapping(config, attrToFilter.field), aggregationSize)
+          queryChain = queryChain.aggregation('terms', attrToFilter.field + optionsPrefix, aggregationSize)
         } else {
-          query = query.aggregation('terms', attrToFilter.field)
-          query.aggregation('range', 'price', config.products.priceFilters)
+          queryChain = queryChain.aggregation('terms', attrToFilter.field)
+          queryChain.aggregation('range', 'price', config.products.priceFilters)
         }
       }
     }
   }
   // Get searchable fields based on user-defined config.
-  query = applySearchQuery(config, queryText, query)
-  const queryBody = query.build()
-  console.dir(searchQuery.getAppliedFilters(),{ depth: null })
-  console.dir(queryBody,{ depth: null })
-  return queryBody
+  queryChain = applySearchQuery({ config, queryText, queryChain })
+  return queryChain.build()
 }
-export function applySort (sort, query) {
+export function applySort ({ sort, queryChain }: { sort: string, queryChain:any }) {
   if (sort) {
     Object.keys(sort).forEach((key) => {
-      query.sort(key, sort[key]);
+      queryChain.sort(key, sort[key]);
     })
   }
-  return query;
+  return queryChain;
 }
 
 /**
@@ -172,7 +169,7 @@ export function applySort (sort, query) {
  *   "type_id": { "eq": "configurable "}
  * }
  */
-export async function buildQueryBodyFromFilterObject (config, bodybuilder, filter, search = '') {
+export async function buildQueryBodyFromFilterObject ({ config, queryChain, filter, search = '' }: { config: ElasticsearchQueryConfig, queryChain: any, filter: any, search: string }) {
   const appliedFilters = [];
   if (filter) {
     for (var attribute in filter) {
@@ -187,9 +184,13 @@ export async function buildQueryBodyFromFilterObject (config, bodybuilder, filte
       });
     }
   }
-  return buildQueryBodyFromSearchQuery({
-    _appliedFilters: appliedFilters,
-    _availableFilters: appliedFilters,
-    _searchText: search
-  }, config, bodybuilder)
+  return buildQueryBodyFromSearchQuery({ 
+    config,
+    queryChain,
+    searchQuery: new SearchQuery({
+      _appliedFilters: appliedFilters,
+      _availableFilters: appliedFilters,
+      _searchText: search
+    })
+  })
 }
