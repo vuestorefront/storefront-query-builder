@@ -2,14 +2,13 @@
     "compilerOptions": {
         "outDir": "./lib",
         "allowJs": true,
-        "target": "es6",
-        "module": "ESNext",
+        "target": "es5",
         "moduleResolution": "node",
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
         "esModuleInterop": true,
         "resolveJsonModule": false,
-        "sourceMap": true   
+        "sourceMap": true
     },
     "include": [
         "./src/**/*"

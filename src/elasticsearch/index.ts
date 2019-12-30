@@ -27,7 +27,7 @@ function processNestedFieldFilter (attribute: string, value: any) {
  * @returns {boolean}
  */
 function checkIfObjectHasScope ({ object, scope }: { object: { scope: string }, scope: string}) {
-  return object.scope === scope || (Array.isArray(object.scope) && object.scope.find(scrope => scrope === scope));
+  return object.scope === scope || (Array.isArray(object.scope) && object.scope.indexOf(scope) >= 0);
 }
 
 export function applySearchQuery ({ config, queryText, queryChain }: { config: ElasticsearchQueryConfig, queryText: string, queryChain: any }) {
@@ -154,7 +154,7 @@ export async function buildQueryBodyFromSearchQuery ({ config, queryChain, searc
   queryChain = applySearchQuery({ config, queryText, queryChain })
   return queryChain.build()
 }
-export function applySort ({ sort, queryChain }: { sort: string, queryChain:any }) {
+export function applySort ({ sort, queryChain }: { sort: any, queryChain:any }) {
   if (sort) {
     Object.keys(sort).forEach((key) => {
       queryChain.sort(key, sort[key]);
