@@ -30,7 +30,7 @@ function checkIfObjectHasScope ({ object, scope }: { object: { scope: string }, 
   return object.scope === scope || (Array.isArray(object.scope) && object.scope.find(scrope => scrope === scope));
 }
 
-export function applySearchQuery ({ config, queryText, queryChain}: { config: ElasticsearchQueryConfig, queryText: string, queryChain: any }) {
+export function applySearchQuery ({ config, queryText, queryChain }: { config: ElasticsearchQueryConfig, queryText: string, queryChain: any }) {
   let getQueryBody = function (b) {
     let searchableAttributes = config.elasticsearch.hasOwnProperty('searchableAttributes') ? config.elasticsearch.searchableAttributes : { 'name': { 'boost': 1 } };
     let searchableFields = []
