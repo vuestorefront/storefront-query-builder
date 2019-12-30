@@ -4,8 +4,9 @@
   "description": "Storefront Query Builder",
   "main": "lib/index.js",
   "scripts": {
-    "build": "tsc --build"
+    "build": "tsc --declaration"
   },
+  "types": "lib/index.d.ts",
   "repository": "https://github.com/DivanteLtd/storefront-query-builder.git",
   "author": "pkarw <pkarwatka@divante.pl>",
   "license": "MIT",
