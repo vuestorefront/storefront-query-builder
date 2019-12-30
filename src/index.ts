@@ -1,9 +1,9 @@
-import { applySearchQuery, applySort, buildQueryBodyFromFilterObject, buildQueryBodyFromSearchQuery } from './src/elasticsearch/index'
-import SearchQuery from './src/types/SearchQuery'
-import QueryArgument from './src/types/QueryArgument'
-import AppliedFilter from './src/types/AppliedFilter'
-import AvailableFilter from './src/types/AvailableFilter'
-import ElasticsearchQueryConfig from './src/elasticsearch/types/ElasticsearchQueryConfig'
+import { applySearchQuery, applySort, buildQueryBodyFromFilterObject, buildQueryBodyFromSearchQuery } from './elasticsearch/index'
+import SearchQuery from './types/SearchQuery'
+import QueryArgument from './types/QueryArgument'
+import AppliedFilter from './types/AppliedFilter'
+import AvailableFilter from './types/AvailableFilter'
+import ElasticsearchQueryConfig from './elasticsearch/types/ElasticsearchQueryConfig'
 
 interface QueryAdapter {
     buildQueryBodyFromSearchQuery ({ config, queryChain, searchQuery }: { config: ElasticsearchQueryConfig, queryChain: any, searchQuery: SearchQuery })
