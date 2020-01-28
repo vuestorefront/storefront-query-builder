@@ -54,7 +54,7 @@ export function applySearchQuery ({ config, queryText, queryChain }: { config: E
   return queryChain;
 }
 
-export async function buildQueryBodyFromSearchQuery ({ config, queryChain, searchQuery }: { config: ElasticsearchQueryConfig, queryChain: any, searchQuery: SearchQuery }) {
+export async function buildQueryBodyFromSearchQuery ({ config, queryChain, searchQuery, customFilters}: { config: ElasticsearchQueryConfig, queryChain: any, searchQuery: SearchQuery, customFilters?: { [key: string]: Function } }) {
   const optionsPrefix = '_options'
   const queryText = searchQuery.getSearchText()
   const rangeOperators = ['gt', 'lt', 'gte', 'lte', 'moreq', 'from', 'to']
@@ -66,7 +66,12 @@ export async function buildQueryBodyFromSearchQuery ({ config, queryChain, searc
     // apply default filters
     appliedFilters.forEach(filter => {
       if (checkIfObjectHasScope({ object: filter, scope: 'default' }) && Object.keys(filter.value).length) {
-        if (Object.keys(filter.value).every(v => (rangeOperators.indexOf(v) >= 0))) {
+        if (filter.attribute === 'custom') {
+          const { value, options } = filter
+          if (Object.keys(customFilters).includes(value as string)) {
+            customFilters[filter.value]({ name: value, options, queryChain, config })
+          }
+        } else if (Object.keys(filter.value).every(v => (rangeOperators.indexOf(v) >= 0))) {
           // process range filters
           queryChain = queryChain.filter('range', filter.attribute, filter.value)
         } else {

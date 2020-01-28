@@ -6,7 +6,7 @@ import AvailableFilter from './types/AvailableFilter'
 import ElasticsearchQueryConfig from './elasticsearch/types/ElasticsearchQueryConfig'
 
 interface QueryAdapter {
-    buildQueryBodyFromSearchQuery ({ config, queryChain, searchQuery }: { config: ElasticsearchQueryConfig, queryChain: any, searchQuery: SearchQuery })
+    buildQueryBodyFromSearchQuery ({ config, queryChain, searchQuery }: { config: ElasticsearchQueryConfig, queryChain: any, searchQuery: SearchQuery, customFilters?: { [key: string]: Function } })
     buildQueryBodyFromFilterObject ({ config, queryChain, filter, search }: { config: ElasticsearchQueryConfig, queryChain: any, filter: any, search: string })
     applySearchQuery ({ config, queryText, queryChain}: { config: ElasticsearchQueryConfig, queryText: string, queryChain: any })
     applySort ({ sort, queryChain }: { sort: string, queryChain:any })

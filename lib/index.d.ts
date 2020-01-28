@@ -8,6 +8,9 @@ interface QueryAdapter {
         config: ElasticsearchQueryConfig;
         queryChain: any;
         searchQuery: SearchQuery;
+        customFilters?: {
+            [key: string]: Function;
+        };
     }): any;
     buildQueryBodyFromFilterObject({ config, queryChain, filter, search }: {
         config: ElasticsearchQueryConfig;

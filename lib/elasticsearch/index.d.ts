@@ -5,10 +5,13 @@ export declare function applySearchQuery({ config, queryText, queryChain }: {
     queryText: string;
     queryChain: any;
 }): any;
-export declare function buildQueryBodyFromSearchQuery({ config, queryChain, searchQuery }: {
+export declare function buildQueryBodyFromSearchQuery({ config, queryChain, searchQuery, customFilters }: {
     config: ElasticsearchQueryConfig;
     queryChain: any;
     searchQuery: SearchQuery;
+    customFilters?: {
+        [key: string]: Function;
+    };
 }): Promise<any>;
 export declare function applySort({ sort, queryChain }: {
     sort: any;
