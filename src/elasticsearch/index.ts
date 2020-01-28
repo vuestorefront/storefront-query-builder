@@ -69,7 +69,7 @@ export async function buildQueryBodyFromSearchQuery ({ config, queryChain, searc
         if (filter.attribute === 'custom') {
           const { value, options } = filter
           if (Object.keys(customFilters).includes(value as string)) {
-            customFilters[filter.value]({ name: value, options, queryChain, config })
+            queryChain = customFilters[filter.value]({ name: value, options, queryChain, config })
           }
         } else if (Object.keys(filter.value).every(v => (rangeOperators.indexOf(v) >= 0))) {
           // process range filters
