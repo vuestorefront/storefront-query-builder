@@ -1,18 +1,23 @@
 import AppliedFilter from './AppliedFilter'
 import AvailableFilter from './AvailableFilter'
+import AppliedSort from './AppliedSort'
 import QueryArgument from './QueryArgument'
+import SortArgument from './SortArgument'
+
 export default class SearchQuery {
 
   private _searchText: string
   private _availableFilters: [AvailableFilter]
   private _appliedFilters: [AppliedFilter]
+  private _appliedSort: [AppliedSort]
 
   public constructor (queryObj?: any) {
     if (!queryObj) {
-      queryObj = { _availableFilters: [], _appliedFilters: [], _searchText: ''} 
+      queryObj = { _availableFilters: [], _appliedFilters: [], _appliedSort: [], _searchText: '' } 
     }
     this._availableFilters = queryObj._availableFilters
     this._appliedFilters = queryObj._appliedFilters
+    this._appliedSort = queryObj._appliedSort
     this._searchText = queryObj._searchText
   }
   /**
@@ -27,6 +32,20 @@ export default class SearchQuery {
     */
   getAppliedFilters () {
     return this._appliedFilters
+  }
+
+  /**
+    * @return {Array} array of applied sort objects
+    */
+   getAppliedSort () {
+    return this._appliedSort
+  }
+
+  /**
+    * @return {Array} check if sort options are added
+    */
+   hasAppliedSort (): boolean {
+    return this._appliedSort.length > 0
   }
 
   /**
@@ -48,6 +67,15 @@ export default class SearchQuery {
       options: options
     })
 
+    return this
+  }
+
+  /**
+    * @param {Object}
+    * @return {Object}
+    */
+   applySort ({field, options = 'asc'}: SortArgument) {
+    this._appliedSort.push({ field, options })
     return this
   }
 
