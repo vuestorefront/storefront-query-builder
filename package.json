@@ -11,6 +11,7 @@
   "author": "pkarw <pkarwatka@divante.pl>",
   "license": "MIT",
   "dependencies": {
+    "@typescript-eslint/parser": "^2.26.0",
     "clone-deep": "^4.0.1"
   },
   "devDependencies": {
