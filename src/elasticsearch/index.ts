@@ -65,34 +65,50 @@ export async function buildQueryBodyFromSearchQuery ({ config, queryChain, searc
     let hasCatalogFilters = false
     // apply default filters
     appliedFilters.forEach(filter => {
+      let { value, attribute, scope } = filter
       if (checkIfObjectHasScope({ object: filter, scope: 'default' }) && Object.keys(filter.value).length) {
         if (Object.keys(filter.value).every(v => (rangeOperators.indexOf(v) >= 0))) {
           // process range filters
-          queryChain = queryChain.filter('range', filter.attribute, filter.value)
+          queryChain = queryChain.filter('range', attribute, value)
         } else {
           // process terms filters
-          const operator = Object.keys(filter.value)[0]
-          filter.value = filter.value[Object.keys(filter.value)[0]]
-          if (!Array.isArray(filter.value) && filter.value !== null) {
-            filter.value = [filter.value]
+          const operator = Object.keys(value)[0]
+          value = value[Object.keys(value)[0]]
+          if (!Array.isArray(value) && value !== null) {
+            value = [value]
           }
-          if (operator === 'or') {
-            if (filter.value === null) {
-              queryChain = queryChain.orFilter('bool', (b) => {
-                return b.notFilter('exists', getMapping(config, filter.attribute))
-              })
+          if (['or', 'nor'].includes(operator) || operator.startsWith('or')) {
+            const orRangeOperators = rangeOperators.map(o => 'or' + o.charAt(0).toUpperCase() + o.substr(1))
+            if (value === null) {
+              queryChain = operator === 'nor'
+                ? queryChain.orFilter('exists', getMapping(config, attribute))
+                : queryChain.orFilter('bool', b => {
+                    return b.notFilter('exists', getMapping(config, attribute))
+                  })
+            } else if (orRangeOperators.includes(operator)) {
+              const realOperator = operator.substr(2).toLowerCase()
+              value = Array.isArray(value) ? value[0] : value
+              queryChain = queryChain.orFilter('range', getMapping(config, attribute), { [realOperator]: value })
             } else {
-              queryChain = queryChain.orFilter('terms', getMapping(config, filter.attribute), filter.value)
+              queryChain = operator === 'nor'
+                ? queryChain.orFilter('bool', b => {
+                    return b.notFilter('terms', getMapping(config, attribute), value)
+                  })
+                : queryChain.orFilter('terms', getMapping(config, attribute), value)
             }
           } else {
-            if (filter.value === null) {
-              queryChain = queryChain.filter('exists', getMapping(config, filter.attribute))
+            if (value === null) {
+              queryChain = operator === 'nin'
+                ? queryChain.notFilter('exists', getMapping(config, attribute))
+                : queryChain.filter('exists', getMapping(config, attribute))
             } else {
-              queryChain = queryChain.filter('terms', getMapping(config, filter.attribute), filter.value)
+              queryChain = operator === 'nin'
+                ? queryChain.notFilter('terms', getMapping(config, attribute), value)
+                : queryChain.filter('terms', getMapping(config, attribute), value)
             }
           }
         }
-      } else if (filter.scope === 'catalog') {
+      } else if (scope === 'catalog') {
         hasCatalogFilters = true
       }
     })
