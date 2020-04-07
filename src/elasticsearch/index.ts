@@ -219,10 +219,14 @@ export default class Filters {
    */
   protected applyCatalogFilters (): this {
     if (this.hasCatalogFilters()) {
-      this.queryChain
-        .filterMinimumShouldMatch(1)
-        .orFilter('bool', b => this.catalogFilterBuilder(b, this.appliedFilters))
-        .orFilter('bool', b => this.catalogFilterBuilder(b, this.appliedFilters, this.optionsPrefix).filter('match', 'type_id', 'configurable'))
+      this.queryChain.filterMinimumShouldMatch(1)
+
+      const catalogFilters = this.appliedFilters.filter(object => this.checkIfObjectHasScope({ object, scope: 'catalog' }))
+      catalogFilters.forEach(filter => {
+        this.queryChain
+          .orFilter('bool', b => this.catalogFilterBuilder(b, filter))
+          .orFilter('bool', b => this.catalogFilterBuilder(b, filter, this.optionsPrefix).filter('match', 'type_id', 'configurable'))
+      })
     }
 
     return this
@@ -237,34 +241,32 @@ export default class Filters {
     return this._hasCatalogFilters
   }
 
-  protected catalogFilterBuilder = (filterQr: any, appliedFilters: AppliedFilter[], attrPostfix: string = '', type: 'query' | 'filter' = 'filter'): any => {
-    appliedFilters.forEach(filter => {
-      let { value, attribute } = filter
-      const valueKeys = value !== null ? Object.keys(value) : []
-      if (this.checkIfObjectHasScope({ object: filter, scope: 'catalog' }) && valueKeys.length > 0) {
-        const isRange = valueKeys.filter(value => this.rangeOperators.indexOf(value) !== -1)
-        if (isRange.length) {
-          let rangeAttribute = attribute
-          // filter by product fiunal price
-          if (rangeAttribute === 'price') {
-            rangeAttribute = this.config.products.priceFilterKey
-          }
-          // process range filters
-          filterQr = filterQr[type]('range', rangeAttribute, value)
+  protected catalogFilterBuilder = (filterQr: any, filter: AppliedFilter, attrPostfix: string = '', type: 'query' | 'filter' = 'filter'): any => {
+    let { value, attribute } = filter
+    const valueKeys = value !== null ? Object.keys(value) : []
+    if (this.checkIfObjectHasScope({ object: filter, scope: 'catalog' }) && valueKeys.length > 0) {
+      const isRange = valueKeys.filter(value => this.rangeOperators.indexOf(value) !== -1)
+      if (isRange.length) {
+        let rangeAttribute = attribute
+        // filter by product fiunal price
+        if (rangeAttribute === 'price') {
+          rangeAttribute = this.config.products.priceFilterKey
+        }
+        // process range filters
+        filterQr = filterQr[type]('range', rangeAttribute, value)
+      } else {
+        // process terms filters
+        let newValue = value[Object.keys(value)[0]]
+        if (!Array.isArray(newValue)) {
+          newValue = [newValue]
+        }
+        if (attrPostfix === '') {
+          filterQr = filterQr[type]('terms', this.getMapping(attribute), newValue)
         } else {
-          // process terms filters
-          let newValue = value[Object.keys(value)[0]]
-          if (!Array.isArray(newValue)) {
-            newValue = [newValue]
-          }
-          if (attrPostfix === '') {
-            filterQr = filterQr[type]('terms', this.getMapping(attribute), newValue)
-          } else {
-            filterQr = filterQr[type]('terms', attribute + attrPostfix, newValue)
-          }
+          filterQr = filterQr[type]('terms', attribute + attrPostfix, newValue)
         }
       }
-    })
+    }
 
     return filterQr
   }
