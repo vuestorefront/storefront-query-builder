@@ -344,15 +344,22 @@ export default class Filters {
    */
   protected getSortedFilters (): FilterInterface[] {
     let filters: FilterInterface[] = Object.values(Object.assign(this.baseFilters, this.customFilters))
-    return filters.sort(function(a, b) {
-      const priorityA = a.priority || 0
-      const priorityB = b.priority || 0
-      if (priorityA === priorityB) {
-        return 0
-      } else {
-        return (priorityA < priorityB) ? -1 : 1
-      }
-    })
+    return filters
+      .map((filter, index) => {
+        if (!filter.priority) {
+          filter.priority = index * 10
+        }
+        return filter
+      })
+      .sort(function(a, b) {
+        const priorityA = a.priority || 10
+        const priorityB = b.priority || 10
+        if (priorityA === priorityB) {
+          return 0
+        } else {
+          return (priorityA < priorityB) ? -1 : 1
+        }
+      })
   }
 
   protected checkIfObjectHasScope ({ object, scope }: { object: { scope: string }, scope: string}): boolean {
