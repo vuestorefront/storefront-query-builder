@@ -304,9 +304,9 @@ export default class Filters {
       let functionScore = getFunctionScores(this.config)
       // Build bool or function_score accordingly
       if (functionScore) {
-        this.queryChain.query('function_score', functionScore, this.getQueryBody)
+        this.queryChain.query('function_score', functionScore, this.getQueryBody.bind(this))
       } else {
-        this.queryChain.query('bool', this.getQueryBody)
+        this.queryChain.query('bool', this.getQueryBody.bind(this))
       }
     }
 
@@ -389,10 +389,6 @@ export default class Filters {
       .orQuery('match_phrase', 'configurable_children.sku', { query: queryText, boost: 1 }))
   }
 
-  public getQueryChain (): any {
-    return this.queryChain
-  }
-
   protected getSearchText (): string {
     return this.searchQuery.getSearchText()
   }
@@ -402,6 +398,10 @@ export default class Filters {
    * @return {any}
    */
   protected bodybuilder = (): any => this.emptyQueryChain.clone()
+
+  public getQueryChain (): any {
+    return this.queryChain
+  }
 
   /**
    * @returns Bodybuilder object
