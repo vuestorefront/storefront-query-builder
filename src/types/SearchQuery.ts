@@ -7,9 +7,9 @@ import SortArgument from './SortArgument'
 export default class SearchQuery {
 
   private _searchText: string
-  private _availableFilters: [AvailableFilter]
-  private _appliedFilters: [AppliedFilter]
-  private _appliedSort: [AppliedSort]
+  private _availableFilters: AvailableFilter[]
+  private _appliedFilters: AppliedFilter[]
+  private _appliedSort: AppliedSort[]
 
   public constructor (queryObj?: any) {
     if (!queryObj) {
@@ -23,21 +23,21 @@ export default class SearchQuery {
   /**
     * @return {Array} array of all available filters objects
     */
-  getAvailableFilters () {
+  getAvailableFilters (): AvailableFilter[] {
     return this._availableFilters
   }
 
   /**
     * @return {Array} array of applied filters objects
     */
-  getAppliedFilters () {
+  getAppliedFilters (): AppliedFilter[] {
     return this._appliedFilters
   }
 
   /**
     * @return {Array} array of applied sort objects
     */
-   getAppliedSort () {
+   getAppliedSort (): AppliedSort[] {
     return this._appliedSort
   }
 
@@ -51,7 +51,7 @@ export default class SearchQuery {
   /**
     * @return {String}
     */
-  getSearchText () {
+  getSearchText (): string {
     return this._searchText
   }
 
@@ -59,7 +59,7 @@ export default class SearchQuery {
     * @param {Object}
     * @return {Object}
     */
-  applyFilter ({key, value, scope = 'default', options = Object}: QueryArgument) {
+  applyFilter ({key, value, scope = 'default', options = Object}: QueryArgument): this {
     this._appliedFilters.push({
       attribute: key,
       value: value,
@@ -74,7 +74,7 @@ export default class SearchQuery {
     * @param {Object}
     * @return {Object}
     */
-   applySort ({field, options = 'asc'}: SortArgument) {
+   applySort ({field, options = 'asc'}: SortArgument): this {
     this._appliedSort.push({ field, options })
     return this
   }
@@ -83,7 +83,7 @@ export default class SearchQuery {
     * @param {Object}
     * @return {Object}
     */
-  addAvailableFilter ({ field, scope = 'default', options = {} }:AvailableFilter) {
+  addAvailableFilter ({ field, scope = 'default', options = {} }:AvailableFilter): this {
     // value can has only String, Array or numeric type
     this._availableFilters.push({
       field: field,
@@ -98,7 +98,7 @@ export default class SearchQuery {
   * @param {Array} filters
   * @return {Object}
   */
-  setAvailableFilters (filters: [AvailableFilter]) {
+  setAvailableFilters (filters: [AvailableFilter]): this {
     this._availableFilters = filters
     return this
   }
@@ -107,7 +107,7 @@ export default class SearchQuery {
   * @param {String} searchText
   * @return {Object}
   */
-  setSearchText (searchText: string) {
+  setSearchText (searchText: string): this {
     this._searchText = searchText
     return this
   }
