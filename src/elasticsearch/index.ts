@@ -44,35 +44,35 @@ export default class Filters {
   protected baseFilters: FiltersInterface = {
     range: {
       check: ({ value }) => Object.keys(value).every(v => this.rangeOperators.includes(v)),
-      filter: ({ attribute, value }: FilterOptions) => this.queryChain.filter('range', attribute, value)
+      filter: ({ attribute, value, queryChain }: FilterOptions) => queryChain.filter('range', attribute, value)
     },
     orRange: {
       check: ({ operator }) => this.orRangeOperators.includes(operator),
-      filter: ({ operator, attribute, value }: FilterOptions) => {
+      filter: ({ operator, attribute, value, queryChain }: FilterOptions) => {
         const realOperator = operator.substr(2).toLowerCase()
         value = Array.isArray(value) ? value[0] : value
-        return this.queryChain.orFilter('range', attribute, { [realOperator]: value })
+        return queryChain.orFilter('range', attribute, { [realOperator]: value })
       }
     },
     or: {
       check: ({ operator }) => operator === 'or',
-      filter: ({ value, attribute }) => {
+      filter: ({ value, attribute, queryChain }) => {
         if (value === null) {
-          return this.queryChain.orFilter('bool', b => {
+          return queryChain.orFilter('bool', b => {
             return b.notFilter('exists', attribute)
           })
         } else {
-          return this.queryChain.orFilter('terms', attribute, value)
+          return queryChain.orFilter('terms', attribute, value)
         }
       }
     },
     nor: {
       check: ({ operator }) => operator === 'nor',
-      filter: ({ value, attribute }) => {
+      filter: ({ value, attribute, queryChain }) => {
         if (value === null) {
-          return this.queryChain.orFilter('exists', attribute)
+          return queryChain.orFilter('exists', attribute)
         } else {
-          return this.queryChain.orFilter('bool', b => {
+          return queryChain.orFilter('bool', b => {
             return b.notFilter('terms', attribute, value)
           })
         }
@@ -80,21 +80,21 @@ export default class Filters {
     },
     nin: {
       check: ({ operator }) => operator === 'nin',
-      filter: ({ value, attribute }) => {
+      filter: ({ value, attribute, queryChain }) => {
         if (value === null) {
-          return this.queryChain.notFilter('exists', attribute)
+          return queryChain.notFilter('exists', attribute)
         } else {
-          return this.queryChain.notFilter('terms', attribute, value)
+          return queryChain.notFilter('terms', attribute, value)
         }
       }
     },
     in: {
       check: ({ operator }) => operator === 'in',
-      filter: ({ value, attribute }) => {
+      filter: ({ value, attribute, queryChain }) => {
         if (value === null) {
-          return this.queryChain.filter('exists', attribute)
+          return queryChain.filter('exists', attribute)
         } else {
-          return this.queryChain.filter('terms', attribute, value)
+          return queryChain.filter('terms', attribute, value)
         }
       }
     }
@@ -119,7 +119,7 @@ export default class Filters {
 
   protected optionsPrefix: string = '_options'
 
-  protected hasCatalogFilters: boolean = false
+  protected _hasCatalogFilters: boolean
 
   /**
    * @param {{ config: ElasticsearchQueryConfig, queryChain: any, searchQuery: SearchQuery, customFilters?: FiltersInterface }} 
@@ -162,20 +162,24 @@ export default class Filters {
   protected applyBaseFilters (appliedFilters: AppliedFilter[]): this {
     appliedFilters.forEach(filter => {
       let { value, attribute } = filter
-      const operator = Object.keys(value)[0]
-
-      attribute = this.getMapping(attribute)
+      if (!this.checkIfObjectHasScope({ object: filter, scope: 'default' })) {
+        return
+      }
 
       value = value[Object.keys(value)[0]]
       if (!Array.isArray(value) && value !== null) {
         value = [value]
       }
 
-      if (this.checkIfObjectHasScope({ object: filter, scope: 'default' }) && Object.keys(value).length) {
+      if (Object.keys(value).length > 0) {
+        attribute = this.getMapping(attribute)
+        const operator = Object.keys(value)[0]
+
         this.getSortedFilters().forEach(filterHandler => {
-          // Add query-chain for custom filters
-          if (filterHandler.check({ operator, attribute, value, queryChain: this.queryChain })) {
-            filterHandler.filter({ operator, attribute, value, queryChain: this.queryChain })
+          const { queryChain } = this
+          // Add `queryChain` variable for custom filters
+          if (filterHandler.check({ operator, attribute, value, queryChain })) {
+            this.queryChain = filterHandler.filter({ operator, attribute, value, queryChain })
           }
         })
       }
@@ -189,7 +193,7 @@ export default class Filters {
    * @return {this}
    */
   protected applyCatalogFilters (appliedFilters: AppliedFilter[]): this {
-    if (this.hasCatalogFilters) {
+    if (this.hasCatalogFilters()) {
       this.queryChain
         .filterMinimumShouldMatch(1)
         .orFilter('bool', b => this.catalogFilterBuilder(b, appliedFilters))
@@ -199,11 +203,20 @@ export default class Filters {
     return this
   }
 
+  protected hasCatalogFilters(): boolean {
+    if (!this._hasCatalogFilters) {
+      this._hasCatalogFilters = this.searchQuery.getAppliedFilters()
+        .some(object => this.checkIfObjectHasScope({ object, scope: 'catalog' }))
+    }
+
+    return this._hasCatalogFilters
+  }
+
   protected catalogFilterBuilder = (filterQr: any, appliedFilters: AppliedFilter[], attrPostfix: string = ''): any => {
     appliedFilters.forEach(filter => {
       let { value, attribute } = filter
-      const valueKeys = Object.keys(value)
-      if (this.checkIfObjectHasScope({ object: filter, scope: 'catalog' }) && valueKeys.length) {
+      const valueKeys = value !== null ? Object.keys(value) : []
+      if (this.checkIfObjectHasScope({ object: filter, scope: 'catalog' }) && valueKeys.length > 0) {
         const isRange = valueKeys.filter(value => this.rangeOperators.indexOf(value) !== -1)
         if (isRange.length) {
           let rangeAttribute = attribute
@@ -244,11 +257,13 @@ export default class Filters {
           const { field } = attribute
           if (field !== 'price') {
             let aggregationSize = { size: config.filterAggregationSize[field] || config.filterAggregationSize.default }
-            this.queryChain.aggregation('terms', this.getMapping(field), aggregationSize)
-            this.queryChain.aggregation('terms', field + this.optionsPrefix, aggregationSize)
+            this.queryChain
+              .aggregation('terms', this.getMapping(field), aggregationSize)
+              .aggregation('terms', field + this.optionsPrefix, aggregationSize)
           } else {
-            this.queryChain.aggregation('terms', field)
-            this.queryChain.aggregation('range', 'price', config.priceFilters)
+            this.queryChain
+              .aggregation('terms', field)
+              .aggregation('range', 'price', config.priceFilters)
           }
         }
       }
