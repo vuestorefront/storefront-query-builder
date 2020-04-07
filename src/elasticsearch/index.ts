@@ -136,6 +136,11 @@ export default class Filters {
 
   protected searchQuery: SearchQuery
 
+  /**
+   * Create a copy of `SearchQuery.getAppliedFilters()` to make them mutable in custom- and base-filters
+   */
+  protected appliedFilters: AppliedFilter[]
+
   protected optionsPrefix: string = '_options'
 
   protected _hasCatalogFilters: boolean
@@ -158,14 +163,11 @@ export default class Filters {
    */
   public buildQueryBodyFromSearchQuery (): this {
     if (this.searchQuery.getAppliedFilters().length > 0) {
-      /**
-       * @param {any} appliedFilters This is a copy of `searchQuery.getAppliedFilters()` because we going to modify the object
-       */
-      const appliedFilters = cloneDeep(this.searchQuery.getAppliedFilters())
+      this.appliedFilters = cloneDeep(this.searchQuery.getAppliedFilters())
 
       this
-        .applyBaseFilters(appliedFilters)
-        .applyCatalogFilters(appliedFilters)
+        .applyBaseFilters()
+        .applyCatalogFilters()
         .applyAggregations()
         .applyTextQuery()
         .applySort()
@@ -178,8 +180,8 @@ export default class Filters {
    * Apply all `default` scoped filters to `queryChain`
    * @return {this}
    */
-  protected applyBaseFilters (appliedFilters: AppliedFilter[]): this {
-    appliedFilters.forEach(filter => {
+  protected applyBaseFilters (): this {
+    this.appliedFilters.forEach(filter => {
       let filterApplied = false
       let { value, attribute } = filter
 
@@ -215,12 +217,12 @@ export default class Filters {
    * Apply all `catalog` scoped filters to `queryChain`
    * @return {this}
    */
-  protected applyCatalogFilters (appliedFilters: AppliedFilter[]): this {
+  protected applyCatalogFilters (): this {
     if (this.hasCatalogFilters()) {
       this.queryChain
         .filterMinimumShouldMatch(1)
-        .orFilter('bool', b => this.catalogFilterBuilder(b, appliedFilters))
-        .orFilter('bool', b => this.catalogFilterBuilder(b, appliedFilters, this.optionsPrefix).filter('match', 'type_id', 'configurable'))
+        .orFilter('bool', b => this.catalogFilterBuilder(b, this.appliedFilters))
+        .orFilter('bool', b => this.catalogFilterBuilder(b, this.appliedFilters, this.optionsPrefix).filter('match', 'type_id', 'configurable'))
     }
 
     return this
@@ -235,7 +237,7 @@ export default class Filters {
     return this._hasCatalogFilters
   }
 
-  protected catalogFilterBuilder = (filterQr: any, appliedFilters: AppliedFilter[], attrPostfix: string = ''): any => {
+  protected catalogFilterBuilder = (filterQr: any, appliedFilters: AppliedFilter[], attrPostfix: string = '', type: 'query' | 'filter' = 'filter'): any => {
     appliedFilters.forEach(filter => {
       let { value, attribute } = filter
       const valueKeys = value !== null ? Object.keys(value) : []
@@ -248,7 +250,7 @@ export default class Filters {
             rangeAttribute = this.config.products.priceFilterKey
           }
           // process range filters
-          filterQr = filterQr.andFilter('range', rangeAttribute, value)
+          filterQr = filterQr[type]('range', rangeAttribute, value)
         } else {
           // process terms filters
           let newValue = value[Object.keys(value)[0]]
@@ -256,9 +258,9 @@ export default class Filters {
             newValue = [newValue]
           }
           if (attrPostfix === '') {
-            filterQr = filterQr.andFilter('terms', this.getMapping(attribute), newValue)
+            filterQr = filterQr[type]('terms', this.getMapping(attribute), newValue)
           } else {
-            filterQr = filterQr.andFilter('terms', attribute + attrPostfix, newValue)
+            filterQr = filterQr[type]('terms', attribute + attrPostfix, newValue)
           }
         }
       }
