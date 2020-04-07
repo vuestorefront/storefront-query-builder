@@ -16,6 +16,7 @@ export interface FilterOptions {
 export interface FilterInterface {
   check ({ operator, value, attribute, queryChain }: FilterOptions): boolean,
   filter ({ operator, value, attribute, queryChain }: FilterOptions): Object
+  mutator? (value: any): any,
   priority?: number
 }
 
@@ -39,6 +40,17 @@ export default class Filters {
   protected orRangeOperators = this.rangeOperators.map(o => 'or' + o.charAt(0).toUpperCase() + o.substr(1))
 
   /**
+   * @param {Object} value Get first option of filter values
+   */
+  protected extractFirstValueMutator = (value): any[] => {
+    value = value[Object.keys(value)[0]]
+    if (!Array.isArray(value) && value !== null) {
+      value = [value]
+    }
+    return value
+  }
+
+  /**
    * @var {FiltersInterface} baseFilters Operators for the default filters like: range, or, nor, in, nin
    */
   protected baseFilters: FiltersInterface = {
@@ -47,11 +59,14 @@ export default class Filters {
       filter: ({ attribute, value, queryChain }: FilterOptions) => queryChain.filter('range', attribute, value)
     },
     orRange: {
-      check: ({ operator }) => this.orRangeOperators.includes(operator),
-      filter: ({ operator, attribute, value, queryChain }: FilterOptions) => {
-        const realOperator = operator.substr(2).toLowerCase()
-        value = Array.isArray(value) ? value[0] : value
-        return queryChain.orFilter('range', attribute, { [realOperator]: value })
+      check: ({ value }) => Object.keys(value).every(o => this.orRangeOperators.includes(o)),
+      filter: ({ attribute, value, queryChain }: FilterOptions) => {
+        for (let o in value) {
+          const realOperator = o.substr(2).toLowerCase()
+          value[realOperator] = value[o]
+          delete value[o]
+        }
+        return queryChain.orFilter('range', attribute, value)
       }
     },
     or: {
@@ -64,7 +79,8 @@ export default class Filters {
         } else {
           return queryChain.orFilter('terms', attribute, value)
         }
-      }
+      },
+      mutator: this.extractFirstValueMutator
     },
     nor: {
       check: ({ operator }) => operator === 'nor',
@@ -76,27 +92,30 @@ export default class Filters {
             return b.notFilter('terms', attribute, value)
           })
         }
-      }
+      },
+      mutator: this.extractFirstValueMutator
     },
     nin: {
-      check: ({ operator }) => operator === 'nin',
+      check: ({ operator }) => ['neq', 'nin'].includes(operator),
       filter: ({ value, attribute, queryChain }) => {
         if (value === null) {
           return queryChain.notFilter('exists', attribute)
         } else {
           return queryChain.notFilter('terms', attribute, value)
         }
-      }
+      },
+      mutator: this.extractFirstValueMutator
     },
     in: {
-      check: ({ operator }) => operator === 'in',
+      check: ({ operator }) => ['eq', 'in'].includes(operator),
       filter: ({ value, attribute, queryChain }) => {
         if (value === null) {
           return queryChain.filter('exists', attribute)
         } else {
           return queryChain.filter('terms', attribute, value)
         }
-      }
+      },
+      mutator: this.extractFirstValueMutator
     }
   }
 
@@ -161,25 +180,29 @@ export default class Filters {
    */
   protected applyBaseFilters (appliedFilters: AppliedFilter[]): this {
     appliedFilters.forEach(filter => {
+      let filterApplied = false
       let { value, attribute } = filter
+
       if (!this.checkIfObjectHasScope({ object: filter, scope: 'default' })) {
         return
       }
 
-      value = value[Object.keys(value)[0]]
-      if (!Array.isArray(value) && value !== null) {
-        value = [value]
-      }
-
+      value = typeof value === 'object' ? value : { 'in': [ value ] }
       if (Object.keys(value).length > 0) {
         attribute = this.getMapping(attribute)
         const operator = Object.keys(value)[0]
 
         this.getSortedFilters().forEach(filterHandler => {
+          // Prevent duplicate assign of filters, despite the fact you can't break `forEach`
+          if (filterApplied) return
+
           const { queryChain } = this
           // Add `queryChain` variable for custom filters
           if (filterHandler.check({ operator, attribute, value, queryChain })) {
+            value = filterHandler.hasOwnProperty('mutator') ? filterHandler.mutator(value) : value
             this.queryChain = filterHandler.filter({ operator, attribute, value, queryChain })
+
+            filterApplied = true
           }
         })
       }
