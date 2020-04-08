@@ -1,4 +1,5 @@
-import { applySearchQuery, applySort, buildQueryBodyFromFilterObject, buildQueryBodyFromSearchQuery, FiltersInterface } from './elasticsearch/index'
+import { applySearchQuery, applySort, buildQueryBodyFromFilterObject, buildQueryBodyFromSearchQuery } from './elasticsearch/index'
+import { FiltersInterface, FilterInterface, FilterOptions } from './elasticsearch/body'
 import SearchQuery from './types/SearchQuery'
 import QueryArgument from './types/QueryArgument'
 import AppliedFilter from './types/AppliedFilter'
@@ -24,6 +25,9 @@ export {
     QueryArgument,
     AppliedFilter,
     AvailableFilter,
+    FiltersInterface,
+    FilterInterface,
+    FilterOptions,
 
     elasticsearch,
     ElasticsearchQueryConfig
