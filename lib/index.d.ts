@@ -1,3 +1,4 @@
+import { FiltersInterface, FilterInterface, FilterOptions } from './elasticsearch/body';
 import SearchQuery from './types/SearchQuery';
 import QueryArgument from './types/QueryArgument';
 import AppliedFilter from './types/AppliedFilter';
@@ -8,6 +9,7 @@ interface QueryAdapter {
         config: ElasticsearchQueryConfig;
         queryChain: any;
         searchQuery: SearchQuery;
+        customFilters?: FiltersInterface;
     }): any;
     buildQueryBodyFromFilterObject({ config, queryChain, filter, search }: {
         config: ElasticsearchQueryConfig;
@@ -26,4 +28,4 @@ interface QueryAdapter {
     }): any;
 }
 declare const elasticsearch: QueryAdapter;
-export { SearchQuery, QueryArgument, AppliedFilter, AvailableFilter, elasticsearch, ElasticsearchQueryConfig };
+export { SearchQuery, QueryArgument, AppliedFilter, AvailableFilter, FiltersInterface, FilterInterface, FilterOptions, elasticsearch, ElasticsearchQueryConfig };
