@@ -15,10 +15,10 @@ export default class SearchQuery {
     if (!queryObj) {
       queryObj = { _availableFilters: [], _appliedFilters: [], _appliedSort: [], _searchText: '' } 
     }
-    this._availableFilters = queryObj._availableFilters
-    this._appliedFilters = queryObj._appliedFilters
-    this._appliedSort = queryObj._appliedSort
-    this._searchText = queryObj._searchText
+    this._availableFilters = queryObj._availableFilters || []
+    this._appliedFilters = queryObj._appliedFilters || []
+    this._appliedSort = queryObj._appliedSort || []
+    this._searchText = queryObj._searchText || ''
   }
   /**
     * @return {Array} array of all available filters objects

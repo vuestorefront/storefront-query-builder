@@ -38,7 +38,7 @@ export function applySort ({ sort, queryChain }: { sort: any, queryChain:any }):
  * Build a elasticsearch request-body from unified query object (as known from `storefront-api`) - eg: `{ "type_id": { "eq": "configurable "} }`
  * @return {Object} Elasticsearch request body
  */
-export async function buildQueryBodyFromFilterObject ({ config, queryChain, filter, search = '' }: { config: ElasticsearchQueryConfig, queryChain: any, filter: any, search: string }): Promise<any> {
+export async function buildQueryBodyFromFilterObject ({ config, queryChain, filter, sort, search = '' }: { config: ElasticsearchQueryConfig, queryChain: any, filter: any, sort: any, search: string }): Promise<any> {
   function processNestedFieldFilter (attribute: string, value: any) {
     let processedFilter = {
       'attribute': attribute,
@@ -74,6 +74,7 @@ export async function buildQueryBodyFromFilterObject ({ config, queryChain, filt
     searchQuery: new SearchQuery({
       _appliedFilters: appliedFilters,
       _availableFilters: appliedFilters,
+      _appliedSort: sort,
       _searchText: search
     })
   })
