@@ -235,9 +235,10 @@ export default class RequestBody {
 
       const catalogFilters = this.appliedFilters.filter(object => this.checkIfObjectHasScope({ object, scope: 'catalog' }))
       catalogFilters.forEach(filter => {
-        this.queryChain
-          .orFilter('bool', b => this.catalogFilterBuilder(b, filter))
-          .orFilter('bool', b => this.catalogFilterBuilder(b, filter, this.optionsPrefix).filter('match', 'type_id', 'configurable'))
+        this.queryChain.filter('bool', catalogFilterQuery => {
+            return this.catalogFilterBuilder(catalogFilterQuery, filter, undefined, 'orFilter')
+              .orFilter('bool', b => this.catalogFilterBuilder(b, filter, this.optionsPrefix).filter('match', 'type_id', 'configurable'))
+          })
       })
     }
 
@@ -253,7 +254,7 @@ export default class RequestBody {
     return this._hasCatalogFilters
   }
 
-  protected catalogFilterBuilder = (filterQr: any, filter: AppliedFilter, attrPostfix: string = '', type: 'query' | 'filter' = 'filter'): any => {
+  protected catalogFilterBuilder = (filterQr: any, filter: AppliedFilter, attrPostfix: string = '', type: 'query' | 'filter' | 'orFilter' = 'filter'): any => {
     let { value, attribute } = filter
     const valueKeys = value !== null ? Object.keys(value) : []
     if (this.checkIfObjectHasScope({ object: filter, scope: 'catalog' }) && valueKeys.length > 0) {
