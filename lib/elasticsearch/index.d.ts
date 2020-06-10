@@ -33,9 +33,10 @@ export declare function applySort({ sort, queryChain }: {
  * Build a elasticsearch request-body from unified query object (as known from `storefront-api`) - eg: `{ "type_id": { "eq": "configurable "} }`
  * @return {Object} Elasticsearch request body
  */
-export declare function buildQueryBodyFromFilterObject({ config, queryChain, filter, search }: {
+export declare function buildQueryBodyFromFilterObject({ config, queryChain, filter, sort, search }: {
     config: ElasticsearchQueryConfig;
     queryChain: any;
     filter: any;
+    sort: any;
     search: string;
 }): Promise<any>;
