@@ -216,9 +216,12 @@ export default class RequestBody {
           if (filterHandler.check({ operator, attribute, value, queryChain })) {
             value = filterHandler.hasOwnProperty('mutator') ? filterHandler.mutator(value) : value
             this.queryChain = filterHandler.filter.call(this, { operator, attribute, value, queryChain })
-            break
+            return
           }
         }
+
+        // add filter attribute that is not handled by sortedFilters list
+        this.queryChain = this.queryChain.filter('terms', attribute, this.extractFirstValueMutator(value))
       }
     })
 
