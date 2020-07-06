@@ -1,7 +1,9 @@
 {
-  "name": "storefront-query-builder",
+  "name": "@vue-storefront/storefront-query-builder",
   "version": "1.0.1",
-  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "Storefront Query Builder",
   "main": "lib/index.js",
   "scripts": {
