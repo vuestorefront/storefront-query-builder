@@ -298,8 +298,9 @@ export default class RequestBody {
       for (let attribute of filters) {
         if (this.checkIfObjectHasScope({ object: attribute, scope: 'catalog' })) {
           const { field } = attribute
+          const options = attribute.options || {}
           if (field !== 'price') {
-            let aggregationSize = { size: config.filterAggregationSize[field] || config.filterAggregationSize.default }
+            let aggregationSize = { size: options.size || config.filterAggregationSize[field] || config.filterAggregationSize.default }
             this.queryChain
               .aggregation('terms', this.getMapping(field), aggregationSize)
               .aggregation('terms', field + this.optionsPrefix, aggregationSize)
