@@ -173,7 +173,7 @@ export default class RequestBody {
 
     this.emptyQueryChain = queryChain.clone()
   }
-  
+
   /**
    * @return {this}
    */
@@ -182,11 +182,11 @@ export default class RequestBody {
       this.appliedFilters = cloneDeep(this.searchQuery.getAppliedFilters())
 
       this
-        .applyBaseFilters()
-        .applyCatalogFilters()
-        .applyAggregations()
-        .applyTextQuery()
-        .applySort()
+          .applyBaseFilters()
+          .applyCatalogFilters()
+          .applyAggregations()
+          .applyTextQuery()
+          .applySort()
     }
 
     return this
@@ -239,9 +239,9 @@ export default class RequestBody {
       const catalogFilters = this.appliedFilters.filter(object => this.checkIfObjectHasScope({ object, scope: 'catalog' }))
       catalogFilters.forEach(filter => {
         this.queryChain.filter('bool', catalogFilterQuery => {
-            return this.catalogFilterBuilder(catalogFilterQuery, filter, undefined, 'orFilter')
+          return this.catalogFilterBuilder(catalogFilterQuery, filter, undefined, 'orFilter')
               .orFilter('bool', b => this.catalogFilterBuilder(b, filter, this.optionsPrefix).filter('match', 'type_id', 'configurable'))
-          })
+        })
       })
     }
 
@@ -251,7 +251,7 @@ export default class RequestBody {
   protected hasCatalogFilters(): boolean {
     if (!this._hasCatalogFilters) {
       this._hasCatalogFilters = this.searchQuery.getAppliedFilters()
-        .some(object => this.checkIfObjectHasScope({ object, scope: 'catalog' }))
+          .some(object => this.checkIfObjectHasScope({ object, scope: 'catalog' }))
     }
 
     return this._hasCatalogFilters
@@ -302,12 +302,26 @@ export default class RequestBody {
           if (field !== 'price') {
             let aggregationSize = { size: options.size || config.filterAggregationSize[field] || config.filterAggregationSize.default }
             this.queryChain
-              .aggregation('terms', this.getMapping(field), aggregationSize)
-              .aggregation('terms', field + this.optionsPrefix, aggregationSize)
+                .aggregation('terms', this.getMapping(field), aggregationSize)
+                .aggregation('terms', field + this.optionsPrefix, aggregationSize)
           } else {
+            const appliedPriceFilter = this.appliedFilters.find(filter => filter.attribute === 'price')
+            const additionalPriceAggregations = [];
+
+            if (appliedPriceFilter && appliedPriceFilter.value && (appliedPriceFilter.value.gte || appliedPriceFilter.value.lte)) {
+              additionalPriceAggregations.push({
+                ...(appliedPriceFilter.value.gte ? { from: appliedPriceFilter.value.gte } : {}),
+                ...(appliedPriceFilter.value.lte ? { to: appliedPriceFilter.value.lte } : {})
+              });
+            }
             this.queryChain
-              .aggregation('terms', field)
-              .aggregation('range', 'price', config.priceFilters)
+                .aggregation('terms', field)
+                .aggregation('range', 'price', {
+                  ranges: [
+                    ...config.priceFilters.ranges,
+                    ...additionalPriceAggregations
+                  ]
+                })
           }
         }
       }
@@ -366,21 +380,21 @@ export default class RequestBody {
   protected getSortedFilters (): FilterInterface[] {
     let filters: FilterInterface[] = Object.values(Object.assign(this.baseFilters, this.customFilters))
     return filters
-      .map((filter, index) => {
-        if (!filter.priority) {
-          filter.priority = (index + 1) * 10
-        }
-        return filter
-      })
-      .sort(function(a, b) {
-        const priorityA = a.priority || 10
-        const priorityB = b.priority || 10
-        if (priorityA === priorityB) {
-          return 0
-        } else {
-          return (priorityA < priorityB) ? -1 : 1
-        }
-      })
+        .map((filter, index) => {
+          if (!filter.priority) {
+            filter.priority = (index + 1) * 10
+          }
+          return filter
+        })
+        .sort(function(a, b) {
+          const priorityA = a.priority || 10
+          const priorityB = b.priority || 10
+          if (priorityA === priorityB) {
+            return 0
+          } else {
+            return (priorityA < priorityB) ? -1 : 1
+          }
+        })
   }
 
   protected checkIfObjectHasScope ({ object, scope }: { object: { scope: string }, scope: string}): boolean {
@@ -405,16 +419,16 @@ export default class RequestBody {
 
     let searchableFields = []
     let searchableAttributes = this.config.elasticsearch.hasOwnProperty('searchableAttributes')
-      ? this.config.elasticsearch.searchableAttributes : { 'name': { 'boost': 1 } }
+        ? this.config.elasticsearch.searchableAttributes : { 'name': { 'boost': 1 } }
     for (const attribute of Object.keys(searchableAttributes)) {
       searchableFields.push(attribute + '^' + getBoosts(this.config, attribute))
     }
 
     return body
-      .orQuery('multi_match', 'fields', searchableFields, getMultiMatchConfig(this.config, queryText))
-      .orQuery('bool', b => b.orQuery('terms', 'configurable_children.sku', queryText.split('-'))
-      .orQuery('match_phrase', 'sku', { query: queryText, boost: 1 })
-      .orQuery('match_phrase', 'configurable_children.sku', { query: queryText, boost: 1 }))
+        .orQuery('multi_match', 'fields', searchableFields, getMultiMatchConfig(this.config, queryText))
+        .orQuery('bool', b => b.orQuery('terms', 'configurable_children.sku', queryText.split('-'))
+            .orQuery('match_phrase', 'sku', { query: queryText, boost: 1 })
+            .orQuery('match_phrase', 'configurable_children.sku', { query: queryText, boost: 1 }))
   }
 
   protected getSearchText (): string {
