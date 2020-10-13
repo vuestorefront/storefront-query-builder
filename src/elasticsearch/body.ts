@@ -80,6 +80,7 @@ export default class RequestBody {
     orRange: {
       check: ({ value }) => Object.keys(value).every(o => this.orRangeOperators.includes(o)),
       filter: ({ attribute, value, queryChain }: FilterOptions) => {
+        queryChain.filterMinimumShouldMatch(1, true)
         for (let o in value) {
           const realOperator = o.substr(2).toLowerCase()
           value[realOperator] = value[o]
