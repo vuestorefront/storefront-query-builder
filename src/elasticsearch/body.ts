@@ -91,6 +91,7 @@ export default class RequestBody {
     or: {
       check: ({ operator }) => operator === 'or',
       filter: ({ value, attribute, queryChain }) => {
+        queryChain.filterMinimumShouldMatch(1, true)
         if (value === null) {
           return queryChain.orFilter('bool', b => {
             return b.notFilter('exists', attribute)
@@ -104,6 +105,7 @@ export default class RequestBody {
     nor: {
       check: ({ operator }) => operator === 'nor',
       filter: ({ value, attribute, queryChain }) => {
+        queryChain.filterMinimumShouldMatch(1, true)
         if (value === null) {
           return queryChain.orFilter('exists', attribute)
         } else {

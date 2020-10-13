@@ -94,7 +94,7 @@ export default class RequestBody {
      */
     protected applyCatalogFilters(): this;
     protected hasCatalogFilters(): boolean;
-    protected catalogFilterBuilder: (filterQr: any, filter: AppliedFilter, attrPostfix?: string, type?: "query" | "filter" | "orFilter") => any;
+    protected catalogFilterBuilder: (filterQr: any, filter: AppliedFilter, attrPostfix?: string, type?: "filter" | "query" | "orFilter") => any;
     /**
      * Apply filter aggregations
      * @return {this}
