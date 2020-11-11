@@ -26,6 +26,10 @@ export default interface ElasticsearchQueryConfig {
       priceFilterKey: string,
       priceFilters: {
         ranges: [{ from: number, to: number }]
+      },
+      aggregate?: {
+        maxPrice: boolean,
+        minPrice: boolean
       }
     }
 }

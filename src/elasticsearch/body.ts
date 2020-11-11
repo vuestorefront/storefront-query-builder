@@ -313,6 +313,8 @@ export default class RequestBody {
                 ...(appliedPriceFilter.value.gte ? { from: appliedPriceFilter.value.gte } : {}),
                 ...(appliedPriceFilter.value.lte ? { to: appliedPriceFilter.value.lte } : {})
               });
+
+
             }
             this.queryChain
                 .aggregation('terms', field)
@@ -322,6 +324,15 @@ export default class RequestBody {
                     ...additionalPriceAggregations
                   ]
                 })
+
+            if (this.config.products && this.config.products.aggregate) {
+              if (this.config.products.aggregate.maxPrice) {
+                this.queryChain.aggregation('max', 'price')
+              }
+              if (this.config.products.aggregate.minPrice) {
+                this.queryChain.aggregation('min', 'price')
+              }
+            }
           }
         }
       }
