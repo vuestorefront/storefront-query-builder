@@ -34,5 +34,9 @@ export default interface ElasticsearchQueryConfig {
                 to: number;
             }];
         };
+        aggregate?: {
+            maxPrice: boolean;
+            minPrice: boolean;
+        };
     };
 }

@@ -7,7 +7,8 @@
   "description": "Storefront Query Builder",
   "main": "lib/index.js",
   "scripts": {
-    "build": "tsc --declaration"
+    "build": "tsc --declaration",
+    "dev": "tsc --declaration -w"
   },
   "types": "lib/index.d.ts",
   "repository": "https://github.com/DivanteLtd/storefront-query-builder.git",
