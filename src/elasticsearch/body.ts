@@ -214,7 +214,7 @@ export default class RequestBody {
           const { queryChain } = this
           // Add `queryChain` variable for custom filters
           if (filterHandler.check({ operator, attribute, value, queryChain })) {
-            value = filterHandler.hasOwnProperty('mutator') ? filterHandler.mutator(value) : value
+            value = filterHandler.hasOwnProperty('mutator') ? filterHandler.mutator.call(this, value) : value
             this.queryChain = filterHandler.filter.call(this, { operator, attribute, value, queryChain })
             return
           }
