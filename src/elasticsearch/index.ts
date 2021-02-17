@@ -62,6 +62,7 @@ export async function buildQueryBodyFromFilterObject ({ config, queryChain, filt
       delete appliedAttributeValue.scope
       appliedFilters.push({
         attribute: processedFilter['attribute'],
+        field: processedFilter['attribute'],
         value: appliedAttributeValue,
         scope: scope
       })
