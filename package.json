@@ -1,5 +1,5 @@
 {
-  "name": "@vue-storefront/storefront-query-builder",
+  "name": "storefront-query-builder",
   "version": "1.0.1",
   "publishConfig": {
     "access": "public"
@@ -11,7 +11,7 @@
     "dev": "tsc --declaration -w"
   },
   "types": "lib/index.d.ts",
-  "repository": "https://github.com/DivanteLtd/storefront-query-builder.git",
+  "repository": "https://github.com/vuestorefront/storefront-query-builder.git",
   "author": "pkarw <pkarwatka@divante.pl>",
   "license": "MIT",
   "dependencies": {
