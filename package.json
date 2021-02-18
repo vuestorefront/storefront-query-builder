@@ -1,6 +1,6 @@
 {
-  "name": "storefront-query-builder",
-  "version": "1.0.1",
+  "name": "@vue-storefront/storefront-query-builder",
+  "version": "1.0.2",
   "publishConfig": {
     "access": "public"
   },
