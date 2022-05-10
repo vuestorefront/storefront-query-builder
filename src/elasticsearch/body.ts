@@ -80,6 +80,7 @@ export default class RequestBody {
     orRange: {
       check: ({ value }) => Object.keys(value).every(o => this.orRangeOperators.includes(o)),
       filter: ({ attribute, value, queryChain }: FilterOptions) => {
+        queryChain.filterMinimumShouldMatch(1, true)
         for (let o in value) {
           const realOperator = o.substr(2).toLowerCase()
           value[realOperator] = value[o]
@@ -91,6 +92,7 @@ export default class RequestBody {
     or: {
       check: ({ operator }) => operator === 'or',
       filter: ({ value, attribute, queryChain }) => {
+        queryChain.filterMinimumShouldMatch(1, true)
         if (value === null) {
           return queryChain.orFilter('bool', b => {
             return b.notFilter('exists', attribute)
@@ -104,6 +106,7 @@ export default class RequestBody {
     nor: {
       check: ({ operator }) => operator === 'nor',
       filter: ({ value, attribute, queryChain }) => {
+        queryChain.filterMinimumShouldMatch(1, true)
         if (value === null) {
           return queryChain.orFilter('exists', attribute)
         } else {
