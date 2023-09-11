@@ -37,6 +37,8 @@ export default interface ElasticsearchQueryConfig {
         aggregate?: {
             maxPrice: boolean;
             minPrice: boolean;
+            maxCostPrice: boolean;
+            minCostPrice: boolean;
         };
     };
 }

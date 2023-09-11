@@ -332,6 +332,12 @@ export default class RequestBody {
               if (this.config.products.aggregate.minPrice) {
                 this.queryChain.aggregation('min', 'price')
               }
+              if (this.config.products.aggregate.maxCostPrice) {
+                this.queryChain.aggregation('max', 'cost_price')
+              }
+              if (this.config.products.aggregate.minCostPrice) {
+                this.queryChain.aggregation('min', 'cost_price')
+              }
             }
           }
         }

@@ -22,14 +22,16 @@ export default interface ElasticsearchQueryConfig {
       filterFieldMapping?: any,
       filterAggregationSize?: {
         default: number,
-      },    
+      },
       priceFilterKey: string,
       priceFilters: {
         ranges: [{ from: number, to: number }]
       },
       aggregate?: {
-        maxPrice: boolean,
-        minPrice: boolean
+          maxPrice: boolean,
+          minPrice: boolean,
+          maxCostPrice: boolean,
+          minCostPrice: boolean
       }
     }
 }
