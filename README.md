@@ -7,7 +7,7 @@
 [![YouTube Channel Subscribers](https://img.shields.io/youtube/channel/subscribers/UCkm1F3Cglty3CE1QwKQUhhg?style=social)](https://www.youtube.com/c/VueStorefront)
 [![Discord](https://img.shields.io/discord/770285988244750366?label=join%20discord&logo=Discord&logoColor=white)](https://discord.vuestorefront.io)
 
-ElasticSearch Query builder from the abstract "SearchQuery" object used by `storefront-api`, `alokai-api` and `alokai` projects.
+ElasticSearch Query builder from the abstract "SearchQuery" object used by `storefront-api`, `vue-storefront-api` and `vue-storefront` projects.
 
 The idea is, that the user can create the query in a pretty abstract way and get the `ElasticSearch` or potentially different query in return. Some nice extension ideas could be to add `mongodb` support or `SQL` support as well.
 
@@ -24,4 +24,4 @@ const elasticSearchQuery = await elasticsearch.buildQueryBodyFromSearchQuery({ c
 ```
 
 More on [`storefront-api`](https://github.com/DivanteLtd/storefront-api)
-More on [`alokai`](https://github.com/DivanteLtd/vue-storefront)
+More on [`vue-storefront`](https://github.com/DivanteLtd/vue-storefront)
